@@ -25,10 +25,13 @@ A datasource is a simple data structure holding all the basics parameters to acc
 Dependencies   
 ------------
 
+ * libzmq, version > 4.2.0
  * czmq
  * PostgreSQL (libpq)
 
-Compiling
----------
+Building 
+--------
 
-    make
+    ./autogen.sh
+    ./configure
+    make 
