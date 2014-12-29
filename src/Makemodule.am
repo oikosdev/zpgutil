@@ -46,7 +46,7 @@ src_zpgutil_selftest_SOURCES = src/zpgutil_selftest.c
 
 check_PROGRAMS += src/zpgutil_selftest
 
-src_zpgutil_selftest_CPPFLAGS = ${src_libzpgutil_la_CFLAGS}
+src_zpgutil_selftest_CPPFLAGS = ${src_libzpgutil_la_CPPFLAGS}
 
 src_zpgutil_selftest_LDADD = ${program_libs}
 
