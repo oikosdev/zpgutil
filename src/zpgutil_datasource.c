@@ -71,7 +71,7 @@ zpgutil_datasource_destroy (zpgutil_datasource_t **self_p)
 char* 
 zpgutil_datasource_connStr (zpgutil_datasource_t *self)
 {
-    char* connStr = (char*) malloc(200);
+    char* connStr = (char*) zmalloc(200);
     sprintf(connStr,"dbname=%s user=%s password=%s hostaddr=%s port=%s",
                      self->db,
                      self->user,

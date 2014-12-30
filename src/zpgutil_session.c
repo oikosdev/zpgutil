@@ -39,7 +39,7 @@ zpgutil_session_new (zpgutil_datasource_t *datasource)
     self->conn = PQconnectdb(cs);
     //-------
     //TODO
-    self->sql = (char *)malloc(300); 
+    self->sql = (char *)zmalloc(300); 
     /* Check to see that the backend connection was successfully made */
     if (PQstatus(self->conn) != CONNECTION_OK)
     {
@@ -130,7 +130,7 @@ char*
 zpgutil_session_select_one (zpgutil_session_t *self)
 {
     PGresult *res = zpgutil_session_select (self);
-    char* resStr = (char *)malloc(300);
+    char* resStr = (char *)zmalloc(300);
     strcpy(resStr,PQgetvalue(res,0,0));
     printf("%s\n",resStr);
     PQclear(res);
