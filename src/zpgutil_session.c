@@ -49,7 +49,7 @@ zpgutil_session_new (zpgutil_datasource_t *datasource)
     } 
     else
     {
-        printf("Opened connection to Postgres.\n");
+        zsys_info ("Opened connection to Postgres.\n");
     }
     assert (self->conn);
     free (cs);
@@ -66,14 +66,14 @@ zpgutil_session_sql (zpgutil_session_t *self, char *sql)
     // necessary to reset the params cache
     zlist_purge (self->pars);
     strcpy(self->sql,sql);
-    printf("sql query is now: %s \n",self->sql);
+    zsys_debug ("sql query is now: %s \n",self->sql);
 }
 
 void
 zpgutil_session_set (zpgutil_session_t *self, char *par)
 {
     zlist_append (self->pars,par);
-    printf("set the parameter to:%s\n",par);
+    zsys_debug ("set the parameter to:%s\n",par);
 }
 
 
@@ -85,14 +85,13 @@ zpgutil_session_select (zpgutil_session_t *self)
     assert(self->sql);
     if(strchr(self->sql,'$')!=NULL)
     {
-      printf("? found\n");
+      zsys_debug ("$ found\n");
       int size = zlist_size(self->pars);
-      printf("size=%i\n",size);
       const char *paramValues[size];
       for(int i=0;i<size;i++)
       {
        char *par = (char *)zlist_next(self->pars);
-       printf("value=%s\n",par);
+       zsys_debug ("set parameter value=%s\n",par);
        paramValues[i]=par;
       }
       res = PQexecParams(self->conn,
@@ -112,13 +111,12 @@ zpgutil_session_select (zpgutil_session_t *self)
     }
     if(PQresultStatus(res)!=PGRES_TUPLES_OK)
     {
-       printf("SELECT failed: %s\n", PQerrorMessage(self->conn));
+       zsys_error ("SELECT failed: %s\n", PQerrorMessage(self->conn));
     }
     else
     {
-      printf("SELECT succeeded !\n");
+      zsys_info ("SELECT succeeded !\n");
       assert(res);
-      printf ("result returned\n");
     }
     return res;
 }
@@ -132,7 +130,6 @@ zpgutil_session_select_one (zpgutil_session_t *self)
     PGresult *res = zpgutil_session_select (self);
     char* resStr = (char *)zmalloc(300);
     strcpy(resStr,PQgetvalue(res,0,0));
-    printf("%s\n",resStr);
     PQclear(res);
     return resStr;
 }
@@ -148,7 +145,7 @@ zpgutil_session_destroy (zpgutil_session_t **self_p)
         zpgutil_session_t *session = *self_p;
         if(session->conn) {
           PQfinish(session->conn);
-          printf("Finished connection to Postgres.\n");
+          zsys_info ("Finished connection to Postgres.\n");
         }
         zpgutil_session_t *self = *self_p;
 

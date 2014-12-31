@@ -78,7 +78,7 @@ zpgutil_datasource_connStr (zpgutil_datasource_t *self)
                      self->password,
                      self->host,
                      self->port);
-    printf("connection string=%s\n",connStr);
+    zsys_debug ("connection string: %s\n",connStr);
     return connStr;
 } 
 
