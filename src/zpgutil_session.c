@@ -115,8 +115,8 @@ zpgutil_session_select (zpgutil_session_t *self)
     }
     else
     {
-      zsys_info ("SELECT succeeded !\n");
-      assert(res);
+      zsys_info ("SELECT succeeded: yes !\n");
+      assert (res);
     }
     return res;
 }
@@ -128,10 +128,18 @@ char*
 zpgutil_session_select_one (zpgutil_session_t *self)
 {
     PGresult *res = zpgutil_session_select (self);
+    if(PQntuples(res)==0) 
+    {
+    zsys_debug ("No tuple returned !");
+    return "";
+    }
+    else 
+    {
     char* resStr = (char *)zmalloc(300);
     strcpy(resStr,PQgetvalue(res,0,0));
     PQclear(res);
     return resStr;
+    }
 }
 
 //  --------------------------------------------------------------------------
