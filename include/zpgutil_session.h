@@ -44,6 +44,16 @@ ZPGUTIL_EXPORT char*
 ZPGUTIL_EXPORT PGresult* 
     zpgutil_session_select (zpgutil_session_t *self);
 
+// -----------------------------------------------------------------------------
+// Execute but without commiting (opening a transaction) 
+ZPGUTIL_EXPORT int 
+    zpgutil_session_execute (zpgutil_session_t *self);
+
+// -----------------------------------------------------------------------------
+// Commit whatever is prepared in the current Postgres connection
+ZPGUTIL_EXPORT int 
+    zpgutil_session_commit (zpgutil_session_t *self);
+
 
 //  Print properties of object
 ZPGUTIL_EXPORT void

@@ -76,6 +76,59 @@ zpgutil_session_set (zpgutil_session_t *self, char *par)
     zsys_debug ("set the parameter to:%s\n",par);
 }
 
+int
+zpgutil_session_execute (zpgutil_session_t *self) 
+{
+    assert(self->conn);
+    PGresult *res = PQexec (self->conn, "BEGIN");
+    if (PQresultStatus (res)!=PGRES_COMMAND_OK)
+    {
+    zsys_error ("Failing to open the transaction: %s\n", PQerrorMessage(self->conn));
+    }
+    else
+    {    
+    zsys_info ("Beginning Transaction");
+    }
+    PQclear (res);
+    assert(self->sql);
+    if(strchr(self->sql,'$')!=NULL)
+    {
+      zsys_debug ("$ found\n");
+      int size = zlist_size(self->pars);
+      const char *paramValues[size];
+      for(int i=0;i<size;i++)
+      {
+       char *par = (char *)zlist_next(self->pars);
+       zsys_debug ("set parameter value=%s\n",par);
+       paramValues[i]=par;
+      }
+      res = PQexecParams(self->conn,
+                    self->sql,
+                    size,
+                    NULL, // datatypes inferred
+                    paramValues,
+                    NULL, // not needed (for binary)
+                    NULL, // not needed (for binary)
+                    0     // returns in text format
+                   ); 
+      assert(res); 
+    }
+    else
+    { 
+        res = PQexec(self->conn,self->sql);
+    }
+    if(PQresultStatus(res)!=PGRES_COMMAND_OK)
+    {
+       zsys_error ("EXECUTE failed: %s\n", PQerrorMessage(self->conn));
+       return 1;
+    }
+    else
+    {
+      zsys_info ("EXECUTE succeeded");
+      assert (res);
+    }
+    return 0;
+}
 
 PGresult*
 zpgutil_session_select (zpgutil_session_t *self)
@@ -115,7 +168,7 @@ zpgutil_session_select (zpgutil_session_t *self)
     }
     else
     {
-      zsys_info ("SELECT succeeded: yes !\n");
+      zsys_info ("SELECT succeeded");
       assert (res);
     }
     return res;
@@ -175,6 +228,28 @@ zpgutil_session_print (zpgutil_session_t *self)
     assert (self);
 }
 
+// -----------------------------------------------------------------------------
+// Commit whatever is prepared in the current Postgres connection
+
+int 
+zpgutil_session_commit (zpgutil_session_t *self) 
+{
+    assert (self);
+    PGresult *res = PQexec (self->conn, "END");
+    if(PQresultStatus(res)!=PGRES_COMMAND_OK)
+    {
+    zsys_error ("COMMIT failed");
+    // \todo use constant for error codes
+    PQclear (res);
+    return 1;
+    }
+    else
+    {
+    zsys_info ("COMMIT succeeded");
+    PQclear (res);
+    }
+    return 0;
+}
 
 //  --------------------------------------------------------------------------
 //  Selftest
@@ -209,9 +284,21 @@ zpgutil_session_test (bool verbose)
     PGresult* r = zpgutil_session_select (self); 
     assert (r);
     PQclear (r);
+    //-------------------------------------------------------------
+    int no_transac = zpgutil_session_commit (self);
+    // does nothing but suceeds anyway
+    assert (!no_transac);
+    //------------------------------------------------------------ 
+    zpgutil_session_sql (self, "INSERT INTO ACCOUNT(name) VALUES('FOO')");
+    int e = zpgutil_session_execute (self);
+    assert (!e);
+    int transac = zpgutil_session_commit (self);
+    assert (!transac);
+    zpgutil_session_sql (self, "DELETE FROM ACCOUNT WHERE NAME='FOO'");
+    zpgutil_session_execute (self);
+    zpgutil_session_commit (self);
     zpgutil_session_destroy (&self);
     //  @end
-
     printf ("OK\n");
     return 0;
 }
