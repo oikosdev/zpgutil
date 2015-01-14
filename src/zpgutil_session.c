@@ -184,7 +184,7 @@ zpgutil_session_select_one (zpgutil_session_t *self)
     if(PQntuples(res)==0) 
     {
     zsys_debug ("No tuple returned !");
-    return "";
+    return NULL;
     }
     else 
     {
