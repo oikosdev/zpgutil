@@ -54,6 +54,11 @@ ZPGUTIL_EXPORT int
 ZPGUTIL_EXPORT int 
     zpgutil_session_commit (zpgutil_session_t *self);
 
+// -----------------------------------------------------------------------------
+// Rollback whatever is prepared in the current Postgres connection
+ZPGUTIL_EXPORT int 
+    zpgutil_session_rollback (zpgutil_session_t *self);
+
 
 //  Print properties of object
 ZPGUTIL_EXPORT void

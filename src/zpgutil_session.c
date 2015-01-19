@@ -228,27 +228,39 @@ zpgutil_session_print (zpgutil_session_t *self)
     assert (self);
 }
 
-// -----------------------------------------------------------------------------
-// Commit whatever is prepared in the current Postgres connection
-
 int 
-zpgutil_session_commit (zpgutil_session_t *self) 
+zpgutil_session_transac_command (zpgutil_session_t *self, char* command) 
 {
     assert (self);
-    PGresult *res = PQexec (self->conn, "END");
+    PGresult *res = PQexec (self->conn, command);
     if(PQresultStatus(res)!=PGRES_COMMAND_OK)
     {
-    zsys_error ("COMMIT failed");
+    zsys_error ("Command %s failed: %s", command, PQerrorMessage(self->conn));
     // \todo use constant for error codes
     PQclear (res);
     return 1;
     }
     else
     {
-    zsys_info ("COMMIT succeeded");
+    zsys_info ("%s succeeded",command);
     PQclear (res);
     }
     return 0;
+}
+
+
+// -----------------------------------------------------------------------------
+// Commit whatever is prepared in the current Postgres connection
+int 
+zpgutil_session_commit (zpgutil_session_t *self) 
+{
+    return zpgutil_session_transac_command (self,"COMMIT");
+}
+
+int 
+zpgutil_session_rollback (zpgutil_session_t *self) 
+{
+    return zpgutil_session_transac_command (self,"ROLLBACK");
 }
 
 //  --------------------------------------------------------------------------
@@ -297,6 +309,10 @@ zpgutil_session_test (bool verbose)
     zpgutil_session_sql (self, "DELETE FROM ACCOUNT WHERE NAME='FOO'");
     zpgutil_session_execute (self);
     zpgutil_session_commit (self);
+    zpgutil_session_sql (self, "INSERT INTO ACCOUNT(name) VALUES('FOO')");
+    int e2 = zpgutil_session_execute (self);
+    assert (!e2);
+    zpgutil_session_rollback (self); 
     zpgutil_session_destroy (&self);
     //  @end
     printf ("OK\n");
