@@ -95,24 +95,29 @@ zpgutil_session_execute (zpgutil_session_t *self)
     {
       zsys_debug ("$ found\n");
       int size = zlist_size(self->pars);
-      const char *paramValues[size];
-      for(int i=0;i<size;i++)
+      zsys_debug ("number of parameters = %i\n",size);
+      char * paramValues[size];
+      zlist_first (self->pars);
+      int i=0;
+      while(i<size)
       {
-       char *par = (char *)zlist_next(self->pars);
-       zsys_debug ("set parameter value=%s\n",par);
-       paramValues[i]=par;
+        zsys_debug ("???%s\n",(char*)(zlist_item(self->pars)));
+        paramValues[i] = (char*)(zlist_item(self->pars));
+        zsys_debug ("set param for %i value=%s\n",i,paramValues[i]);
+        i++;
+        zlist_next(self->pars);
       }
       res = PQexecParams(self->conn,
                     self->sql,
                     size,
                     NULL, // datatypes inferred
-                    paramValues,
+                    (const char * const *)paramValues,
                     NULL, // not needed (for binary)
                     NULL, // not needed (for binary)
                     0     // returns in text format
                    ); 
       assert(res); 
-    }
+   } 
     else
     { 
         res = PQexec(self->conn,self->sql);
