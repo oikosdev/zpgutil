@@ -6,7 +6,7 @@ Utility library to easily use PostgreSQL from a czmq program
 Status 
 ------
 
-This is still a draft work. Not ready to be used yet, but contributors are welcome.
+Still alpha. Needs some memory-leak corrections.
 
 Overview 
 --------
