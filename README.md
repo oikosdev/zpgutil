@@ -6,7 +6,7 @@ Utility library to easily use PostgreSQL from a czmq program
 Status 
 ------
 
-Still alpha. Needs some memory-leak corrections.
+Still alpha. Needs some memory-leaks look-up. Contributions all welcome !
 
 Overview 
 --------
@@ -69,5 +69,5 @@ You may also need to adjust the following environment variables: zmq_CFLAGS, zmq
 Tests    
 -----
 
-Only tested with Linux Ubuntu 12, gcc 4.6.3.
+Only tested on Linux Ubuntu 12, gcc 4.6.3.
  
