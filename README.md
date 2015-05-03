@@ -1,7 +1,7 @@
 zpgutil
 =======
 
-Utility library to easily use PostgreSQL from a czmq program
+Utility library to easily use PostgreSQL libpq from a czmq program, in a (pure C) object-oriented way.
 
 Status 
 ------
