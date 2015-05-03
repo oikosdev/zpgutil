@@ -18,9 +18,36 @@ Overview
 Content 
 -------
 
-The first class provided by zpgutil is the datasource: zpgutil_datasource_t.
+The first class provided by zpgutil is the datasource: zpgutil_datasource.
 
 A datasource is a simple data structure holding all the basics parameters to access a PostgreSQL. It is constructed from a [zconfig_t](http://czmq.zeromq.org/manual:zconfig): this provides a standard config file format from which you can set-up your program.
+
+In your datasource, you will typically set up: db, user, password, host and port. 
+
+The second class provided by this library is the session: zpgutil_session.
+
+A session is a class holding a connection to the postgresql database. A session is constructed from a zpgutil_datasource.
+Then, you can use it to set a sql query, set parameters, query for data, execute sql queries, commit, rollback.
+
+Let's see some code example:
+
+    zpgutil_datasource_t *datasource = zpgutil_datasource_new (config);
+    assert (datasource);
+    zpgutil_session_t *self = zpgutil_session_new (datasource);
+    assert (self);
+    zpgutil_session_sql (self,"SELECT * FROM company");
+    zpgutil_session_select_one (self);
+    //------------------------------------------------------------ 
+    zpgutil_session_sql (self, "SELECT code, name FROM company");
+    PGresult* r = zpgutil_session_select (self); 
+    assert (r);
+    PQclear (r);
+    //-------------------------------------------------------------
+    zpgutil_session_sql (self, "INSERT INTO ACCOUNT(name) VALUES('FOO')");
+    int e = zpgutil_session_execute (self);
+    assert (!e);
+    int transac = zpgutil_session_commit (self);
+    assert (!transac);
 
 Dependencies   
 ------------
