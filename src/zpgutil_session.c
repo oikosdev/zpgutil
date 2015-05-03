@@ -72,8 +72,10 @@ zpgutil_session_sql (zpgutil_session_t *self, char *sql)
 void
 zpgutil_session_set (zpgutil_session_t *self, char *par)
 {
-    zlist_append (self->pars,par);
-    zsys_debug ("set the parameter to:%s\n",par);
+    char* str = (char *)zmalloc(300);
+    strcpy(str,par);
+    zlist_append (self->pars,str);
+    zsys_debug ("set the parameter to:%s\n",str);
 }
 
 int
@@ -96,12 +98,18 @@ zpgutil_session_execute (zpgutil_session_t *self)
       zsys_debug ("$ found\n");
       int size = zlist_size(self->pars);
       zsys_debug ("number of parameters = %i\n",size);
-      char * paramValues[size];
+      // init a table of parameters
+      char **paramValues = (char **)zmalloc(size * sizeof(char *));
+      int stringsize = 300; 
+      for (int j = 0; j < size; ++j) {
+         paramValues[j] = (char *)zmalloc(stringsize+1);
+      }
+      //----------------------
       zlist_first (self->pars);
       int i=0;
       while(i<size)
       {
-        zsys_debug ("???%s\n",(char*)(zlist_item(self->pars)));
+        zsys_debug ("param? %s\n",(char*)(zlist_item(self->pars)));
         paramValues[i] = (char*)(zlist_item(self->pars));
         zsys_debug ("set param for %i value=%s\n",i,paramValues[i]);
         i++;
@@ -117,6 +125,11 @@ zpgutil_session_execute (zpgutil_session_t *self)
                     0     // returns in text format
                    ); 
       assert(res); 
+      // release the memory hold by paramValues
+      for (int k = 0; k < size; ++k) {
+        free(paramValues[k]);
+      }
+      free(paramValues);
    } 
     else
     { 
