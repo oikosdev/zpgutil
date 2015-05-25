@@ -35,12 +35,17 @@ zpgutil_datasource_t *
 zpgutil_datasource_new (zconfig_t *config)
 {
     zpgutil_datasource_t *self = (zpgutil_datasource_t *) zmalloc (sizeof (zpgutil_datasource_t));
+    self->user = (char*)zmalloc(300);
+    self->password = (char*)zmalloc(300);
+    self->host= (char*)zmalloc(300);
+    self->port = (char*)zmalloc(300);
+    self->db = (char*)zmalloc(300);
     assert (self);
-    self->db = zconfig_resolve (config, "/database/db", NULL);
-    self->user = zconfig_resolve (config, "/database/user", NULL);
-    self->password = zconfig_resolve (config, "/database/password", NULL);
-    self->host = zconfig_resolve (config, "/database/host", NULL);
-    self->port = zconfig_resolve (config, "/database/port", NULL);
+    strcpy(self->db, zconfig_resolve (config, "/database/db", NULL));
+    strcpy(self->user, zconfig_resolve (config, "/database/user", NULL));
+    strcpy(self->password, zconfig_resolve (config, "/database/password", NULL));
+    strcpy(self->host, zconfig_resolve (config, "/database/host", NULL));
+    strcpy(self->port, zconfig_resolve (config, "/database/port", NULL));
     return self;
 }
 
@@ -111,8 +116,11 @@ zpgutil_datasource_test (bool verbose)
     assert (self);
     printf("port in datasource =%s\n",self->port);
     //  @end
-    zpgutil_datasource_connStr (self);
+    char * str = zpgutil_datasource_connStr (self);
+    assert (str);
+    free (str);
     printf ("OK\n");
     zpgutil_datasource_destroy (&self);
+    zconfig_destroy (&config);
     return 0;
 }

@@ -37,6 +37,8 @@ zpgutil_session_new (zpgutil_datasource_t *datasource)
     assert (self);
     char *cs = zpgutil_datasource_connStr(datasource);
     self->conn = PQconnectdb(cs);
+    free (cs);
+
     //-------
     //TODO
     self->sql = (char *)zmalloc(300); 
@@ -52,8 +54,9 @@ zpgutil_session_new (zpgutil_datasource_t *datasource)
         zsys_info ("Opened connection to Postgres.\n");
     }
     assert (self->conn);
-    free (cs);
     self->pars = zlist_new ();
+    zlist_autofree (self->pars);
+
     assert (self->pars);
     return self;
 }
@@ -76,6 +79,7 @@ zpgutil_session_set (zpgutil_session_t *self, char *par)
     strcpy(str,par);
     zlist_append (self->pars,str);
     zsys_debug ("set the parameter to:%s\n",str);
+    free (str);
 }
 
 int
@@ -138,11 +142,13 @@ zpgutil_session_execute (zpgutil_session_t *self)
     if(PQresultStatus(res)!=PGRES_COMMAND_OK)
     {
        zsys_error ("EXECUTE failed: %s\n", PQerrorMessage(self->conn));
+       PQclear (res);
        return 1;
     }
     else
     {
       zsys_info ("EXECUTE succeeded");
+      PQclear (res);
       assert (res);
     }
     return 0;
@@ -230,6 +236,7 @@ zpgutil_session_destroy (zpgutil_session_t **self_p)
 
         //  Free class properties
         zlist_destroy (&self->pars);
+        free (self->sql); 
         //  Free object itself
         free (self);
         *self_p = NULL;
@@ -301,7 +308,8 @@ zpgutil_session_test (bool verbose)
     zpgutil_session_t *self = zpgutil_session_new (datasource);
     assert (self);
     zpgutil_session_sql (self,"SELECT * FROM company");
-    zpgutil_session_select_one (self);
+    char* res0 = zpgutil_session_select_one (self);
+    free (res0);
     //----------------------------------------------------------
     zpgutil_session_sql (self,"SELECT name FROM company WHERE code=$1");
     zpgutil_session_set (self,"XXX");
@@ -309,6 +317,7 @@ zpgutil_session_test (bool verbose)
     assert (res);
     printf ("resultat=%s\n", res);
     assert (streq(res,"Lambda Inc."));
+    free (res);
     //------------------------------------------------------------ 
     zpgutil_session_sql (self, "SELECT code, name FROM company");
     PGresult* r = zpgutil_session_select (self); 
@@ -332,6 +341,8 @@ zpgutil_session_test (bool verbose)
     assert (!e2);
     zpgutil_session_rollback (self); 
     zpgutil_session_destroy (&self);
+    zpgutil_datasource_destroy (&datasource);
+    zconfig_destroy (&config);
     //  @end
     printf ("OK\n");
     return 0;
