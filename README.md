@@ -6,7 +6,7 @@ Utility library to easily use PostgreSQL libpq from a czmq program, in a (pure C
 Status 
 ------
 
-Still alpha. Needs some memory-leaks look-up. Contributions all welcome !
+Memory leaks checked. Code is to be reviewed and secured for buffer-overflow. Contributions all welcome !
 
 Overview 
 --------
