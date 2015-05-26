@@ -129,10 +129,10 @@ zpgutil_session_execute (zpgutil_session_t *self)
                     0     // returns in text format
                    ); 
       assert(res); 
-      // release the memory hold by paramValues
-      for (int k = 0; k < size; ++k) {
+      // release the memory hold by paramValues: will be clear when the zlist is cleared
+      /*for (int k = 0; k < size; ++k) {
         free(paramValues[k]);
-      }
+      }*/
       free(paramValues);
    } 
     else
@@ -148,7 +148,7 @@ zpgutil_session_execute (zpgutil_session_t *self)
     else
     {
       zsys_info ("EXECUTE succeeded");
-      PQclear (res);
+      //PQclear (res);
       assert (res);
     }
     return 0;
