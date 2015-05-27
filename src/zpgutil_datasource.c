@@ -35,17 +35,27 @@ zpgutil_datasource_t *
 zpgutil_datasource_new (zconfig_t *config)
 {
     zpgutil_datasource_t *self = (zpgutil_datasource_t *) zmalloc (sizeof (zpgutil_datasource_t));
-    self->user = (char*)zmalloc(300);
-    self->password = (char*)zmalloc(300);
-    self->host= (char*)zmalloc(300);
-    self->port = (char*)zmalloc(300);
-    self->db = (char*)zmalloc(300);
+    self->user = (char*)zmalloc(100);
+    self->password = (char*)zmalloc(100);
+    self->host= (char*)zmalloc(100);
+    self->port = (char*)zmalloc(100);
+    self->db = (char*)zmalloc(100);
     assert (self);
-    strcpy(self->db, zconfig_resolve (config, "/database/db", NULL));
-    strcpy(self->user, zconfig_resolve (config, "/database/user", NULL));
-    strcpy(self->password, zconfig_resolve (config, "/database/password", NULL));
-    strcpy(self->host, zconfig_resolve (config, "/database/host", NULL));
-    strcpy(self->port, zconfig_resolve (config, "/database/port", NULL));
+    char* db =  zconfig_resolve (config, "/database/db", NULL);
+    assert( strlen(db)<100 );
+    strcpy(self->db, db);
+    char* user =  zconfig_resolve (config, "/database/user", NULL);
+    assert(strlen(user)<100);
+    strcpy(self->user,user);
+    char* password =  zconfig_resolve (config, "/database/password", NULL);
+    assert(strlen(password)<100);
+    strcpy(self->password,password);
+    char* host =  zconfig_resolve (config, "/database/host", NULL);
+    assert(strlen(host)<100);
+    strcpy(self->host,host);
+    char* port = zconfig_resolve (config, "/database/port", NULL);
+    assert(strlen(port)<100);
+    strcpy(self->port, port);
     return self;
 }
 

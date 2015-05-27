@@ -20,6 +20,9 @@
 
 #include "../include/zpgutil.h"
 
+const int MAX_QUERY_SIZE=1000000; 
+const int MAX_PARAM_SIZE=1000000;
+
 struct _zpgutil_session_t {
   PGconn *conn;
   char *sql; 
@@ -38,10 +41,7 @@ zpgutil_session_new (zpgutil_datasource_t *datasource)
     char *cs = zpgutil_datasource_connStr(datasource);
     self->conn = PQconnectdb(cs);
     free (cs);
-
     //-------
-    //TODO
-    self->sql = (char *)zmalloc(300); 
     /* Check to see that the backend connection was successfully made */
     if (PQstatus(self->conn) != CONNECTION_OK)
     {
@@ -56,7 +56,7 @@ zpgutil_session_new (zpgutil_datasource_t *datasource)
     assert (self->conn);
     self->pars = zlist_new ();
     zlist_autofree (self->pars);
-
+    // note: sql is not set yet (waiting for the query)
     assert (self->pars);
     return self;
 }
@@ -66,8 +66,16 @@ zpgutil_session_new (zpgutil_datasource_t *datasource)
 void
 zpgutil_session_sql (zpgutil_session_t *self, char *sql)
 {
+    // purge if a sql query is already set
+    if(self->sql) 
+    {
+      free(self->sql);
+      self->sql = NULL;
+    }
     // necessary to reset the params cache
     zlist_purge (self->pars);
+    assert(strlen(sql)<MAX_QUERY_SIZE);
+    self->sql = (char *)zmalloc((strlen(sql)+1)*sizeof(char));
     strcpy(self->sql,sql);
     zsys_debug ("sql query is now: %s \n",self->sql);
 }
@@ -75,7 +83,8 @@ zpgutil_session_sql (zpgutil_session_t *self, char *sql)
 void
 zpgutil_session_set (zpgutil_session_t *self, char *par)
 {
-    char* str = (char *)zmalloc(300);
+    assert(strlen(par)<MAX_PARAM_SIZE);
+    char* str = (char *)zmalloc((strlen(par)+1)*sizeof(char));
     strcpy(str,par);
     zlist_append (self->pars,str);
     zsys_debug ("set the parameter to:%s\n",str);
@@ -236,7 +245,10 @@ zpgutil_session_destroy (zpgutil_session_t **self_p)
 
         //  Free class properties
         zlist_destroy (&self->pars);
+        if(self->sql)
+        {
         free (self->sql); 
+        }
         //  Free object itself
         free (self);
         *self_p = NULL;
