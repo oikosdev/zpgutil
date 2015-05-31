@@ -12,10 +12,13 @@
 #ifndef __ZPGUTIL_SESSION_H_INCLUDED__
 #define __ZPGUTIL_SESSION_H_INCLUDED__
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+extern const int MAX_QUERY_SIZE;
+extern const int MAX_PARAM_SIZE;
 
 //  @interface
 //  Create a new zpgutil_session

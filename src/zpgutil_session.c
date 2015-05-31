@@ -75,7 +75,7 @@ zpgutil_session_sql (zpgutil_session_t *self, char *sql)
     // necessary to reset the params cache
     zlist_purge (self->pars);
     assert(strlen(sql)<MAX_QUERY_SIZE);
-    self->sql = (char *)zmalloc((strlen(sql)+1)*sizeof(char));
+    self->sql = (char *)zmalloc((strlen(sql)+1));
     strcpy(self->sql,sql);
     zsys_debug ("sql query is now: %s \n",self->sql);
 }
@@ -84,7 +84,7 @@ void
 zpgutil_session_set (zpgutil_session_t *self, char *par)
 {
     assert(strlen(par)<MAX_PARAM_SIZE);
-    char* str = (char *)zmalloc((strlen(par)+1)*sizeof(char));
+    char* str = (char *)zmalloc((strlen(par)+1));
     strcpy(str,par);
     zlist_append (self->pars,str);
     zsys_debug ("set the parameter to:%s\n",str);
@@ -112,7 +112,7 @@ zpgutil_session_execute (zpgutil_session_t *self)
       int size = zlist_size(self->pars);
       zsys_debug ("number of parameters = %i\n",size);
       // init a table of parameters
-      char **paramValues = (char **)zmalloc(size * sizeof(char *));
+      char **paramValues = (char **)zmalloc(size);
       int stringsize = 300; 
       for (int j = 0; j < size; ++j) {
          paramValues[j] = (char *)zmalloc(stringsize+1);
