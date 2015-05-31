@@ -6,7 +6,11 @@ Utility library to easily use PostgreSQL libpq from a czmq program, in a (pure C
 Status 
 ------
 
-Memory leaks checked. Code is to be reviewed and secured for buffer-overflow. Contributions all welcome !
+[![Build Status](https://travis-ci.org/oikosdev/zpgutil.svg?branch=master)](https://travis-ci.org/oikosdev/zpgutil)
+
+Memory leaks checked, code secured for buffer-overflow. Contributions all welcome !
+
+
 
 Overview 
 --------
