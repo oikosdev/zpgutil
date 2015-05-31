@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+echo "STARTING BUILD"
 if [ $BUILD_TYPE == "default" ]; then
     # Build, check, and install libsodium if WITH_LIBSODIUM is set
     if [ -n "$WITH_LIBSODIUM" ]; then
@@ -24,3 +25,4 @@ else
     cd ./builds/${BUILD_TYPE} && ./ci_build.sh
 fi
 
+echo "END OF BUILD"
