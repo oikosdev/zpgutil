@@ -7,7 +7,6 @@ env:
 
 before_script:
 - sudo apt-get install uuid-dev
-- ./autogen.sh
 - psql -c 'create database travis_ci_test;' -U postgres
 
 
