@@ -20,7 +20,7 @@ if [ $BUILD_TYPE == "default" ]; then
         make check && sudo make install && sudo ldconfig ) || exit 1
 
     # Build, check, and install zpgutil from local source
-    ./configure && make check-verbose VERBOSE=1 && sudo make install
+    ./autogen.sh && ./configure && make check-verbose VERBOSE=1 && sudo make install
 else
     cd ./builds/${BUILD_TYPE} && ./ci_build.sh
 fi
