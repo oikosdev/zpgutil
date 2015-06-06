@@ -157,7 +157,7 @@ zpgutil_session_execute (zpgutil_session_t *self)
     else
     {
       zsys_info ("EXECUTE succeeded");
-      //PQclear (res);
+      PQclear (res);
       assert (res);
     }
     return 0;
