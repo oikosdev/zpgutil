@@ -10,8 +10,6 @@ Status
 
 Memory leaks checked, code secured for buffer-overflow. Contributions all welcome !
 
-Currently: compatibility issue with czmq (see Issues)
-
 Overview 
 --------
 
