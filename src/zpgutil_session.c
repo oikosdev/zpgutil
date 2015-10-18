@@ -340,15 +340,21 @@ zpgutil_session_test (bool verbose)
     // does nothing but suceeds anyway
     assert (!no_transac);
     //------------------------------------------------------------ 
-    zpgutil_session_sql (self, "INSERT INTO ACCOUNT(name) VALUES('FOO')");
+    zpgutil_session_sql (self, "INSERT INTO ACCOUNT(name) VALUES($1)");
+    zpgutil_session_set (self, "My'FOO");
     int e = zpgutil_session_execute (self);
     assert (!e);
+    zpgutil_session_sql (self, "SELECT name FROM ACCOUNT");
+    char * res2 = zpgutil_session_select_one (self);
+    assert (streq(res2,"My'FOO"));
     int transac = zpgutil_session_commit (self);
     assert (!transac);
-    zpgutil_session_sql (self, "DELETE FROM ACCOUNT WHERE NAME='FOO'");
+    zpgutil_session_sql (self, "DELETE FROM ACCOUNT WHERE NAME=$1");
+    zpgutil_session_set (self, "My'FOO");
     zpgutil_session_execute (self);
     zpgutil_session_commit (self);
-    zpgutil_session_sql (self, "INSERT INTO ACCOUNT(name) VALUES('FOO')");
+    zpgutil_session_sql (self, "INSERT INTO ACCOUNT(name) VALUES($1)");
+    zpgutil_session_set (self, "My'FOO");
     int e2 = zpgutil_session_execute (self);
     assert (!e2);
     zpgutil_session_rollback (self); 
