@@ -311,7 +311,7 @@ zpgutil_session_test (bool verbose)
     //  @selftest
     zconfig_t* config = zconfig_load(".testdir/test.cfg");
     assert(config); 
-    char *user = zconfig_resolve (config, "/database/user", NULL);
+    char *user = zconfig_get (config, "/database/user", NULL);
     assert(user);
     printf("user=%s\n",user);
     zpgutil_datasource_t *datasource = zpgutil_datasource_new (config);

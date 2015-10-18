@@ -41,19 +41,19 @@ zpgutil_datasource_new (zconfig_t *config)
     self->port = (char*)zmalloc(100);
     self->db = (char*)zmalloc(100);
     assert (self);
-    char* db =  zconfig_resolve (config, "/database/db", NULL);
+    char* db =  zconfig_get (config, "/database/db", NULL);
     assert( strlen(db)<100 );
     strcpy(self->db, db);
-    char* user =  zconfig_resolve (config, "/database/user", NULL);
+    char* user =  zconfig_get (config, "/database/user", NULL);
     assert(strlen(user)<100);
     strcpy(self->user,user);
-    char* password =  zconfig_resolve (config, "/database/password", NULL);
+    char* password =  zconfig_get (config, "/database/password", NULL);
     assert(strlen(password)<100);
     strcpy(self->password,password);
-    char* host =  zconfig_resolve (config, "/database/host", NULL);
+    char* host =  zconfig_get (config, "/database/host", NULL);
     assert(strlen(host)<100);
     strcpy(self->host,host);
-    char* port = zconfig_resolve (config, "/database/port", NULL);
+    char* port = zconfig_get (config, "/database/port", NULL);
     assert(strlen(port)<100);
     strcpy(self->port, port);
     return self;
@@ -119,7 +119,7 @@ zpgutil_datasource_test (bool verbose)
     //  Simple create/destroy test
     zconfig_t* config = zconfig_load(".testdir/test.cfg");
     assert(config); 
-    char *user = zconfig_resolve (config, "/database/user", NULL);
+    char *user = zconfig_get (config, "/database/user", NULL);
     assert(user);
     printf("user=%s\n",user);
     zpgutil_datasource_t *self = zpgutil_datasource_new (config);
