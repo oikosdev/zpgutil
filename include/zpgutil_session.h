@@ -31,11 +31,11 @@ ZPGUTIL_EXPORT void
 
 // Set the current SQL query
 ZPGUTIL_EXPORT void
-    zpgutil_session_sql (zpgutil_session_t *self, char *sql);
+    zpgutil_session_sql (zpgutil_session_t *self, const char *sql);
 
 // Set a query parameter
 ZPGUTIL_EXPORT void
-    zpgutil_session_set (zpgutil_session_t *self, char *par);
+    zpgutil_session_set (zpgutil_session_t *self, const char *par);
 
 // Select query with a char* return type
 // char* to be freed by client
