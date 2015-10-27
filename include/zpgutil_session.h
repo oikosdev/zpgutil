@@ -33,6 +33,10 @@ ZPGUTIL_EXPORT void
 ZPGUTIL_EXPORT void
     zpgutil_session_sql (zpgutil_session_t *self, const char *sql);
 
+// Prepare a statement
+ZPGUTIL_EXPORT int
+    zpgutil_session_prepare (zpgutil_session_t *self, const char *stmtName, const char *sql);
+
 // Set a query parameter
 ZPGUTIL_EXPORT void
     zpgutil_session_set (zpgutil_session_t *self, const char *par);
@@ -51,6 +55,10 @@ ZPGUTIL_EXPORT PGresult*
 // Execute but without commiting (opening a transaction) 
 ZPGUTIL_EXPORT int 
     zpgutil_session_execute (zpgutil_session_t *self);
+
+//Execute a prepared statement identified by its name as used at the creation
+ZPGUTIL_EXPORT int
+    zpgutil_session_execute_prepared (zpgutil_session_t *self, const char *stmtName);
 
 // -----------------------------------------------------------------------------
 // Commit whatever is prepared in the current Postgres connection

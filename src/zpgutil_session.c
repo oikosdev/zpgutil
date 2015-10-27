@@ -91,6 +91,36 @@ zpgutil_session_set (zpgutil_session_t *self, const char *par)
     free (str);
 }
 
+int 
+zpgutil_session_prepare (zpgutil_session_t *self, const char *stmtName, const char *sql)
+{
+    assert(self->conn);
+    zsys_info ("Beginning Transaction");
+    assert(sql);
+    assert(stmtName);
+    PGresult *res = PQprepare(self->conn,
+		    stmtName,
+                    sql,
+                    0,
+                    NULL
+                   ); 
+    assert(res); 
+    if(PQresultStatus(res)!=PGRES_COMMAND_OK)
+    {
+       zsys_error ("PREPARED failed: %s\n", PQerrorMessage(self->conn));
+       PQclear (res);
+       return 1;
+    }
+    else
+    {
+      zsys_info ("PREPARED succeeded");
+      PQclear (res);
+      assert (res);
+    }
+    return 0;
+}
+
+
 int
 zpgutil_session_execute (zpgutil_session_t *self) 
 {
@@ -152,15 +182,77 @@ zpgutil_session_execute (zpgutil_session_t *self)
     {
        zsys_error ("EXECUTE failed: %s\n", PQerrorMessage(self->conn));
        PQclear (res);
+       zlist_purge (self->pars);
        return 1;
     }
     else
     {
       zsys_info ("EXECUTE succeeded");
       PQclear (res);
+      zlist_purge (self->pars);
       assert (res);
     }
     return 0;
+}
+
+int
+zpgutil_session_execute_prepared (zpgutil_session_t *self, const char *stmtName) 
+{
+    assert(self->conn);
+    PGresult *res = PQexec (self->conn, "BEGIN");
+    if (PQresultStatus (res)!=PGRES_COMMAND_OK)
+    {
+    zsys_error ("Failing to open the transaction: %s\n", PQerrorMessage(self->conn));
+    }
+    else
+    {    
+    zsys_info ("Beginning Transaction");
+    }
+    PQclear (res);
+    assert(self->sql);
+    int size = zlist_size(self->pars);
+    zsys_debug ("number of parameters = %i\n",size);
+    char **paramValues = (char **)zmalloc(size);
+    int stringsize = 300; 
+    for (int j = 0; j < size; ++j) {
+       paramValues[j] = (char *)zmalloc(stringsize+1);
+    }
+    //----------------------
+    zlist_first (self->pars);
+    int i=0;
+    while(i<size)
+    {
+        zsys_debug ("param? %s\n",(char*)(zlist_item(self->pars)));
+        paramValues[i] = (char*)(zlist_item(self->pars));
+        zsys_debug ("set param for %i value=%s\n",i,paramValues[i]);
+        i++;
+        zlist_next(self->pars);
+    }
+   res = PQexecPrepared(self->conn,
+                    stmtName,
+                    size,
+                    (const char * const *)paramValues,
+                    NULL, // not needed (for binary)
+                    NULL, // not needed (for binary)
+                    0     // returns in text format
+                   ); 
+   assert(res); 
+   free(paramValues);
+   if(PQresultStatus(res)!=PGRES_COMMAND_OK)
+   {
+      zsys_error ("EXECUTE failed: %s\n", PQerrorMessage(self->conn));
+      zlist_purge (self->pars);
+      PQclear (res);
+      return 1;
+   }
+   else
+   {
+     zsys_info ("EXECUTE succeeded");
+     zlist_purge (self->pars);
+     PQclear (res);
+     assert (res);
+   }
+   return 0;
 }
 
 PGresult*
@@ -356,8 +448,18 @@ zpgutil_session_test (bool verbose)
     zpgutil_session_sql (self, "INSERT INTO ACCOUNT(name) VALUES($1)");
     zpgutil_session_set (self, "My'FOO");
     int e2 = zpgutil_session_execute (self);
-    assert (!e2);
+    assert (e2==0);
     zpgutil_session_rollback (self); 
+    // Prepqred statements
+    int pr = zpgutil_session_prepare (self, "my_stmt", "INSERT INTO ACCOUNT(name) VALUES($1)");
+    assert (pr==0);
+    zpgutil_session_set (self, "Peter");
+    int ep = zpgutil_session_execute_prepared (self, "my_stmt");
+    assert (ep==0);
+    zpgutil_session_sql (self, "SELECT name FROM ACCOUNT WHERE name LIKE 'Pet%'");
+    char * res3 = zpgutil_session_select_one (self);
+    assert (streq(res3,"Peter"));
+ 
     zpgutil_session_destroy (&self);
     zpgutil_datasource_destroy (&datasource);
     zconfig_destroy (&config);

@@ -10,6 +10,8 @@ Status
 
 Memory leaks checked, code secured for buffer-overflow. Contributions all welcome !
 
+2015/10/27: just added Prepared Statement to the library.
+
 Overview 
 --------
 
