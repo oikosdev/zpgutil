@@ -152,9 +152,6 @@ zpgutil_session_execute (zpgutil_session_t *self)
     }
     PQclear (res);
     assert(self->sql);
-    if(strchr(self->sql,'$')!=NULL)
-    {
-      zsys_debug ("$ found\n");
       int size = zlist_size(self->pars);
       zsys_debug ("number of parameters = %i\n",size);
       // init a table of parameters
@@ -171,11 +168,6 @@ zpgutil_session_execute (zpgutil_session_t *self)
                    ); 
       assert(res); 
       free(paramValues);
-   } 
-    else
-    { 
-        res = PQexec(self->conn,self->sql);
-    }
     if(PQresultStatus(res)!=PGRES_COMMAND_OK)
     {
        zsys_error ("EXECUTE failed: %s\n", PQerrorMessage(self->conn));
@@ -423,10 +415,11 @@ zpgutil_session_test (bool verbose)
     assert (streq(res2,"My'FOO"));
     int transac = zpgutil_session_commit (self);
     assert (!transac);
-    zpgutil_session_sql (self, "DELETE FROM ACCOUNT WHERE NAME=$1");
-    zpgutil_session_set (self, "My'FOO");
+    // testing here without parameters
+    zpgutil_session_sql (self, "DELETE FROM ACCOUNT WHERE NAME LIKE 'My%'");
     zpgutil_session_execute (self);
     zpgutil_session_commit (self);
+    // ------------------
     zpgutil_session_sql (self, "INSERT INTO ACCOUNT(name) VALUES($1)");
     zpgutil_session_set (self, "My'FOO");
     int e2 = zpgutil_session_execute (self);
