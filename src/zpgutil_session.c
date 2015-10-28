@@ -120,6 +120,22 @@ zpgutil_session_prepare (zpgutil_session_t *self, const char *stmtName, const ch
     return 0;
 }
 
+/*
+ * Util function (not in API) to get an arrray of strings from a zlist
+ */ 
+const char* *zlist_to_array (zlist_t *list)
+{
+ int size = zlist_size (list);
+ const char* *stringArray = (const char**)zmalloc (size);
+ zlist_first (list);
+ for (int i=0;i<size;++i) 
+ {
+    stringArray[i] = (const char*)(zlist_item(list));
+    zlist_next (list);
+    zsys_debug ("in Array set param for %i value=%s\n",i,stringArray[i]);
+ }
+ return stringArray;
+}
 
 int
 zpgutil_session_execute (zpgutil_session_t *self) 
@@ -142,22 +158,8 @@ zpgutil_session_execute (zpgutil_session_t *self)
       int size = zlist_size(self->pars);
       zsys_debug ("number of parameters = %i\n",size);
       // init a table of parameters
-      char **paramValues = (char **)zmalloc(size);
-      int stringsize = 300; 
-      for (int j = 0; j < size; ++j) {
-         paramValues[j] = (char *)zmalloc(stringsize+1);
-      }
+      const char **paramValues = zlist_to_array (self->pars);
       //----------------------
-      zlist_first (self->pars);
-      int i=0;
-      while(i<size)
-      {
-        zsys_debug ("param? %s\n",(char*)(zlist_item(self->pars)));
-        paramValues[i] = (char*)(zlist_item(self->pars));
-        zsys_debug ("set param for %i value=%s\n",i,paramValues[i]);
-        i++;
-        zlist_next(self->pars);
-      }
       res = PQexecParams(self->conn,
                     self->sql,
                     size,
@@ -168,10 +170,6 @@ zpgutil_session_execute (zpgutil_session_t *self)
                     0     // returns in text format
                    ); 
       assert(res); 
-      // release the memory hold by paramValues: will be clear when the zlist is cleared
-      /*for (int k = 0; k < size; ++k) {
-        free(paramValues[k]);
-      }*/
       free(paramValues);
    } 
     else
@@ -209,26 +207,10 @@ zpgutil_session_execute_prepared (zpgutil_session_t *self, const char *stmtName)
     zsys_info ("Beginning Transaction");
     }
     PQclear (res);
-    assert(self->sql);
-    int size = zlist_size(self->pars);
-    zsys_debug ("number of parameters = %i\n",size);
-    char **paramValues = (char **)zmalloc(size);
-    int stringsize = 300; 
-    for (int j = 0; j < size; ++j) {
-       paramValues[j] = (char *)zmalloc(stringsize+1);
-    }
-    //----------------------
-    zlist_first (self->pars);
-    int i=0;
-    while(i<size)
-    {
-        zsys_debug ("param? %s\n",(char*)(zlist_item(self->pars)));
-        paramValues[i] = (char*)(zlist_item(self->pars));
-        zsys_debug ("set param for %i value=%s\n",i,paramValues[i]);
-        i++;
-        zlist_next(self->pars);
-    }
-   res = PQexecPrepared(self->conn,
+    assert (stmtName);
+    int size = zlist_size (self->pars);
+    const char **paramValues = zlist_to_array (self->pars);
+    res = PQexecPrepared(self->conn,
                     stmtName,
                     size,
                     (const char * const *)paramValues,
