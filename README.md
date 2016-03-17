@@ -73,5 +73,5 @@ You may also need to adjust the following environment variables: zmq_CFLAGS, zmq
 Tests    
 -----
 
-Only tested on Linux Ubuntu 12, gcc 4.6.3.
+Tested on Linux Ubuntu 12, gcc 4.6.3.
  
